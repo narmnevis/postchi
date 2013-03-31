@@ -16,7 +16,8 @@ public class DefaultPostchiTest {
 
 	@Before
 	public void setUp() throws Exception {
-		postchi = new DefaultPostchi(ClassLoader.getSystemResourceAsStream("zipcodes.csv"));
+		postchi = new DefaultPostchi(ClassLoader.getSystemResourceAsStream("zipcodes.csv"),
+				ClassLoader.getSystemResourceAsStream("cities.csv"));
 	}
 
 	@Test(expected = NullPointerException.class)
@@ -45,5 +46,23 @@ public class DefaultPostchiTest {
 		Location a = postchi.getLocation(code);
 		assertNotNull(a);
 		assertEquals(code, a.getPostCode());
+	}
+
+	@Test
+	public void getRegionShouldReturnValueForAnExistingCity() {
+		String region = postchi.getRegion("7705PM");
+		assertNotNull(region);
+	}
+
+	@Test
+	public void getRegionReturnsNullForANonExistentRequest() {
+		String region = postchi.getRegion("7711PM");
+		assertNull(region);
+	}
+	
+	@Test
+	public void getRegionReturnsNullWhenRegionInfoIsNotLoaded() throws Exception {
+		postchi = new DefaultPostchi(ClassLoader.getSystemResourceAsStream("zipcodes.csv"), null);
+		assertNull(postchi.getRegion("7705PM"));
 	}
 }
