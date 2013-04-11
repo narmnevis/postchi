@@ -15,13 +15,13 @@ import com.narmnevis.postchi.Postchi;
 /**
  * The REST entry point for Postchi services.
  * 
- * @author behroozn
+ * @author nobeh
  * @since 1.0
  */
-@Path("")
 @Provider
 @Consumes(MediaType.TEXT_PLAIN)
 @Produces(MediaType.TEXT_PLAIN)
+@Path("")
 public class PostchiResource {
 
 	private final Postchi postchi;
