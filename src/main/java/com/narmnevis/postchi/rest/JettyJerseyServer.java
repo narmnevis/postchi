@@ -3,11 +3,14 @@ package com.narmnevis.postchi.rest;
 import javax.ws.rs.core.Application;
 
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
+import org.glassfish.jersey.servlet.ServletProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -43,12 +46,14 @@ public abstract class JettyJerseyServer {
 		SLF4JBridgeHandler.install();
 
 		String modeProperty = System.getProperty("mode", Mode.DEVELOPMENT.name());
-		final Mode mode = Mode.valueOf(modeProperty);
+		final Mode mode = Mode.valueOf(modeProperty.toUpperCase());
 
+		ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory
+				.getLogger(Logger.ROOT_LOGGER_NAME);
 		if (mode == Mode.DEVELOPMENT) {
-			ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) LoggerFactory
-					.getLogger(Logger.ROOT_LOGGER_NAME);
-			root.setLevel(Level.DEBUG);
+			rootLogger.setLevel(Level.DEBUG);
+		} else {
+			rootLogger.setLevel(Level.INFO);
 		}
 
 		Class<? extends ResourceConfig> app = getApplication();
@@ -69,10 +74,9 @@ public abstract class JettyJerseyServer {
 				appName = contextPath.substring(1);
 			}
 		}
-		logger.info("Exposing application [" + appName + "] on [" + contextPath + "]");
+		logger.info("Exposing application [" + appName + "] on [" + contextPath + "] in mode: " + mode);
 
-		ServletContainer servletContainer = createJerseyServletContainer(app);
-		ServletHolder servletHolder = createJettyServletHolder(servletContainer);
+		ServletHolder servletHolder = createJettyServletHolder(app);
 
 		configureServletHolderModeParameters(mode, servletHolder);
 
@@ -87,17 +91,19 @@ public abstract class JettyJerseyServer {
 
 	protected void configureServletHolderModeParameters(Mode mode, ServletHolder servletHolder) {
 		if (mode == Mode.DEVELOPMENT) {
-			servletHolder.setInitParameter("com.sun.jersey.config.feature.Debug", "true");
-			servletHolder.setInitParameter("com.sun.jersey.config.feature.Trace", "true");
-			servletHolder.setInitParameter("com.sun.jersey.spi.container.ContainerRequestFilters",
-					"org.glassfish.jersey.filter.LoggingFilter");
-			servletHolder.setInitParameter("com.sun.jersey.spi.container.ContainerResponseFilters",
-					"org.glassfish.jersey.filter.LoggingFilter");
+			servletHolder.setInitParameter("org.glassfish.jersey.config.feature.Debug", "true");
+			servletHolder.setInitParameter("org.glassfish.jersey.config.feature.Trace", "true");
+			servletHolder.setInitParameter("org.glassfish.jersey.spi.ContainerRequestFilters",
+					LoggingFilter.class.getName());
+			servletHolder.setInitParameter("org.glassfish.jersey.spi.ContainerResponseFilters",
+					LoggingFilter.class.getName());
 		}
 	}
 
-	protected ServletHolder createJettyServletHolder(ServletContainer servletContainer) {
-		return new ServletHolder(servletContainer);
+	protected ServletHolder createJettyServletHolder(Class<? extends Application> appClass) {
+		ServletHolder holder = new ServletHolder(ServletContainer.class);
+		holder.setInitParameter(ServletProperties.JAXRS_APPLICATION_CLASS, appClass.getName());
+		return holder;
 	}
 
 	protected ServletContextHandler createJettyServletContextHandler(String contextPath, ServletHolder servletHolder) {
@@ -107,20 +113,6 @@ public abstract class JettyJerseyServer {
 		return contextHandler;
 	}
 
-	/**
-	 * @return Should return an instance of a JAX-RS {@link Application}.
-	 * @throws Exception
-	 */
-	protected abstract Class<? extends ResourceConfig> getApplication() throws Exception;
-
-	private ServletContainer createJerseyServletContainer(Class<? extends ResourceConfig> application) {
-		try {
-			return new ServletContainer(application.newInstance());
-		} catch (InstantiationException | IllegalAccessException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
 	protected Server createServer(Mode mode, String appName) {
 		switch (mode) {
 		case DEVELOPMENT:
@@ -128,9 +120,20 @@ public abstract class JettyJerseyServer {
 		case PRODUCTION:
 			QueuedThreadPool pool = new QueuedThreadPool(256, 16, 60000);
 			pool.setName(appName);
-			return new Server(pool);
+			Server server = new Server(pool);
+			ServerConnector connector = new ServerConnector(server);
+			connector.setPort(80);
+			connector.setIdleTimeout(60000);
+			server.addConnector(connector);
+			return server;
 		}
 		throw new IllegalArgumentException("No server can be started");
 	}
+	
+	/**
+	 * @return Should return an instance of a JAX-RS {@link Application}.
+	 * @throws Exception
+	 */
+	protected abstract Class<? extends ResourceConfig> getApplication() throws Exception;
 
 }

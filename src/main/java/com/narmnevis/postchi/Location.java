@@ -3,7 +3,7 @@ package com.narmnevis.postchi;
 /**
  * An abstraction for location that is used by postchi.
  * 
- * @author behroozn
+ * @author nobeh
  * @since 1.0
  * 
  */

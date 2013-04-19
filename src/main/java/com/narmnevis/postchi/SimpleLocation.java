@@ -1,5 +1,10 @@
 package com.narmnevis.postchi;
 
+/**
+ * @author nobeh
+ * @since 1.0
+ * 
+ */
 public class SimpleLocation implements Location {
 
 	public static final String[] PROPERTIES = { "city", "postCode", "street" };

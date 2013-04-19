@@ -25,7 +25,7 @@ import org.supercsv.prefs.CsvPreference;
  * the post code files using either a system property or an environment variable
  * with name {@code postchi.source}.
  * 
- * @author behroozn
+ * @author nobeh
  * @since 1.0
  * 
  */
@@ -68,6 +68,7 @@ public class DefaultPostchi implements Postchi {
 		}
 		Path cityPath = Paths.get(citySource);
 		InputStream cityInputStream = Files.exists(cityPath) ? Files.newInputStream(cityPath) : null;
+		logger.info("Using sources as [{}] and [{}].", source, citySource);
 		load(Files.newInputStream(sourcePath), cityInputStream);
 	}
 
@@ -163,7 +164,7 @@ public class DefaultPostchi implements Postchi {
 					+ TimeUnit.NANOSECONDS.toSeconds(end - start));
 			reader.close();
 			return locations;
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new IllegalStateException("Failed to load post codes into postchi using source: ", e);
 		}
 	}

@@ -80,7 +80,46 @@
 					<target>1.7</target>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<archive>
+						<manifestEntries>
+							<Main-Class>com.narmnevis.postchi.rest.PostchiServer</Main-Class>
+							<Build-Number>${project.version}</Build-Number>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+			</plugin>
 		</plugins>
 	</build>
+
+	<scm>
+		<connection>scm:git:git://github.com/Narmnevis/postchi.git</connection>
+		<url>scm:git:git://github.com/Narmnevis/postchi.git</url>
+		<developerConnection>scm:git:git://github.com/Narmnevis/postchi.git</developerConnection>
+	</scm>
 
 </project>

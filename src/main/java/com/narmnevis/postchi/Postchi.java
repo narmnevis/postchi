@@ -3,7 +3,7 @@ package com.narmnevis.postchi;
 /**
  * Interface definition for postchi postal code services.
  * 
- * @author behroozn
+ * @author nobeh
  * @since 1.0
  */
 public interface Postchi {

@@ -8,7 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * @author behroozn
+ * @author nobeh
  */
 public class DefaultPostchiTest {
 
