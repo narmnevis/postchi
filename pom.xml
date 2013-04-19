@@ -5,7 +5,7 @@
 	<groupId>com.narmnevis</groupId>
 	<artifactId>postchi</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0</version>
+	<version>1.1-SNAPSHOT</version>
 	<name>Postchi</name>
 	<description>A simple service to provide postal code operations</description>
 
